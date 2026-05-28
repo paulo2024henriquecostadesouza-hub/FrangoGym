@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "FrangoGym",
-    "slug": "FrangoGym",
+    "slug": "FitnessApp",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -28,6 +28,7 @@
       "eas": {
         "projectId": "458a759e-5242-427a-b7b6-e31243e845bb"
       }
-    }
+    },
+    "owner": "paulo_1998"
   }
 }
