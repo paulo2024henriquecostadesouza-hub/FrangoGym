@@ -7,6 +7,7 @@ export const KEYS = {
   REFEICOES: 'refeicoes',
   CONQUISTAS: 'conquistas',
   HISTORICO_PESO: 'historico_peso',
+  ALIMENTOS_CUSTOM: 'alimentos_custom',
 };
 
 export async function salvar(chave, valor) {
