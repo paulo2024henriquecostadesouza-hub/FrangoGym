@@ -319,7 +319,9 @@ export default function NutricaoScreen() {
 
   async function carregarDiario() {
     const d = await carregar(KEYS.REFEICOES, {});
-    setDiario(d[hoje] || {});
+    const dHoje = d[hoje] || {};
+    // Compatibilidade: se era array (formato antigo), reseta
+    setDiario(Array.isArray(dHoje) ? {} : dHoje);
   }
 
   async function adicionarAlimento(item) {

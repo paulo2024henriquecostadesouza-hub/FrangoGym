@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import Svg, { Path, Ellipse, Rect, G, Circle } from 'react-native-svg';
+import Svg, { Path, Ellipse, Rect } from 'react-native-svg';
 
 // Cores por estado do músculo
 const COR_INATIVO = '#2a2a3e';

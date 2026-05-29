@@ -72,6 +72,11 @@ export default function TreinosScreen() {
     ? treinoAtivo.exercicios.map(id => EXERCICIOS.find(e => e.id === id)).filter(Boolean)
     : [];
 
+  // Pré-calcular músculos do treino inteiro (evita IIFE no JSX)
+  const todosMusculosP = [...new Set(exsAtivos.flatMap(e => EXERCICIO_MUSCULOS[e.id]?.primarios || []))];
+  const todosMusculosS = [...new Set(exsAtivos.flatMap(e => EXERCICIO_MUSCULOS[e.id]?.secundarios || []).filter(m => !todosMusculosP.includes(m)))];
+  const musculosExAtual = exsAtivos[exercicioAtual] ? EXERCICIO_MUSCULOS[exsAtivos[exercicioAtual].id] : null;
+
   return (
     <View style={styles.container}>
       <View style={styles.headerArea}>
@@ -168,16 +173,12 @@ export default function TreinosScreen() {
             <Text style={styles.fecharText}>✕ Encerrar</Text>
           </TouchableOpacity>
 
-          {exsAtivos.length > 0 && (() => {
-            // Calcular todos os músculos do treino inteiro
-            const todosP = [...new Set(exsAtivos.flatMap(e => EXERCICIO_MUSCULOS[e.id]?.primarios || []))];
-            const todosS = [...new Set(exsAtivos.flatMap(e => EXERCICIO_MUSCULOS[e.id]?.secundarios || []).filter(m => !todosP.includes(m)))];
-            return (
+          {exsAtivos.length > 0 && (
             <>
               {exercicioAtual === 0 && !descansando && (
                 <View style={styles.treinoResumoMap}>
                   <Text style={styles.treinoResumoTitulo}>💪 Músculos deste treino</Text>
-                  <MuscleMap primarios={todosP} secundarios={todosS} escala={0.5} mostrarLegenda={true} />
+                  <MuscleMap primarios={todosMusculosP} secundarios={todosMusculosS} escala={0.5} mostrarLegenda={true} />
                 </View>
               )}
               <Text style={styles.progressoText}>
@@ -192,12 +193,11 @@ export default function TreinosScreen() {
                 <Text style={styles.exAtivoNome}>{exsAtivos[exercicioAtual].nome}</Text>
                 <Text style={styles.exAtivoDesc}>{exsAtivos[exercicioAtual].desc}</Text>
 
-                {/* Mapa muscular do exercício atual */}
-                {EXERCICIO_MUSCULOS[exsAtivos[exercicioAtual].id] && (
+                {musculosExAtual && (
                   <View style={styles.muscleMapAtivo}>
                     <MuscleMap
-                      primarios={EXERCICIO_MUSCULOS[exsAtivos[exercicioAtual].id].primarios}
-                      secundarios={EXERCICIO_MUSCULOS[exsAtivos[exercicioAtual].id].secundarios}
+                      primarios={musculosExAtual.primarios}
+                      secundarios={musculosExAtual.secundarios}
                       escala={0.6}
                       mostrarLegenda={true}
                     />
@@ -256,8 +256,7 @@ export default function TreinosScreen() {
                 ))}
               </ScrollView>
             </>
-            );
-          })()}
+          )}
         </LinearGradient>
       </Modal>
     </View>
