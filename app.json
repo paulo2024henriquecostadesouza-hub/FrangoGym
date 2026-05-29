@@ -31,6 +31,12 @@
         "projectId": "458a759e-5242-427a-b7b6-e31243e845bb"
       }
     },
-    "owner": "paulo_1998"
+    "owner": "paulo_1998",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/458a759e-5242-427a-b7b6-e31243e845bb"
+    }
   }
 }
