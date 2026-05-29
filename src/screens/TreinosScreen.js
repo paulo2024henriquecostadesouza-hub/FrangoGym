@@ -7,19 +7,25 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { EXERCICIOS, GRUPOS, PLANOS } from '../data/exercises';
 import { salvar, carregar, KEYS, atualizarStreak } from '../utils/storage';
 import MuscleMap, { EXERCICIO_MUSCULOS, MUSCULOS } from '../components/MuscleMap';
+import MuscleMapBiotipo from '../components/MuscleMapBiotipo';
+import { carregar as carregarStorage } from '../utils/storage';
 
 export default function TreinosScreen() {
-  const [aba, setAba] = useState('planos'); // 'planos' | 'exercicios'
+  const [aba, setAba] = useState('planos');
   const [grupoFiltro, setGrupoFiltro] = useState('Todos');
   const [treinoAtivo, setTreinoAtivo] = useState(null);
   const [exercicioAtual, setExercicioAtual] = useState(0);
   const [serieAtual, setSerieAtual] = useState(1);
   const [descansando, setDescansando] = useState(false);
   const [tempo, setTempo] = useState(60);
+  const [biotipo, setBiotipo] = useState('mesomorfo');
   const timerRef = useRef(null);
   const progressAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
+    carregarStorage('perfil_usuario').then(p => {
+      if (p?.biotipo) setBiotipo(p.biotipo);
+    });
     return () => clearInterval(timerRef.current);
   }, []);
 
@@ -152,9 +158,10 @@ export default function TreinosScreen() {
                     <Text style={styles.exDesc}>{item.desc}</Text>
                     <Text style={styles.exSeries}>{item.series} séries · {item.reps} reps</Text>
                     <View style={styles.exMuscleArea}>
-                      <MuscleMap
+                      <MuscleMapBiotipo
                         primarios={musculos.primarios}
                         secundarios={musculos.secundarios}
+                        biotipo={biotipo}
                         escala={0.55}
                         mostrarLegenda={true}
                       />
@@ -178,7 +185,7 @@ export default function TreinosScreen() {
               {exercicioAtual === 0 && !descansando && (
                 <View style={styles.treinoResumoMap}>
                   <Text style={styles.treinoResumoTitulo}>💪 Músculos deste treino</Text>
-                  <MuscleMap primarios={todosMusculosP} secundarios={todosMusculosS} escala={0.5} mostrarLegenda={true} />
+                  <MuscleMapBiotipo primarios={todosMusculosP} secundarios={todosMusculosS} biotipo={biotipo} escala={0.5} mostrarLegenda={true} />
                 </View>
               )}
               <Text style={styles.progressoText}>
@@ -195,9 +202,10 @@ export default function TreinosScreen() {
 
                 {musculosExAtual && (
                   <View style={styles.muscleMapAtivo}>
-                    <MuscleMap
+                    <MuscleMapBiotipo
                       primarios={musculosExAtual.primarios}
                       secundarios={musculosExAtual.secundarios}
+                      biotipo={biotipo}
                       escala={0.6}
                       mostrarLegenda={true}
                     />
