@@ -6,6 +6,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { EXERCICIOS, GRUPOS, PLANOS } from '../data/exercises';
 import { salvar, carregar, KEYS, atualizarStreak } from '../utils/storage';
+import MuscleMap, { EXERCICIO_MUSCULOS, MUSCULOS } from '../components/MuscleMap';
 
 export default function TreinosScreen() {
   const [aba, setAba] = useState('planos'); // 'planos' | 'exercicios'
@@ -135,17 +136,28 @@ export default function TreinosScreen() {
           <FlatList
             data={exerciciosFiltrados}
             keyExtractor={item => String(item.id)}
-            renderItem={({ item }) => (
-              <View style={styles.exCard}>
-                <View style={styles.exGrupoBar} />
-                <View style={styles.exInfo}>
-                  <Text style={styles.exNome}>{item.nome}</Text>
-                  <Text style={styles.exGrupo}>{item.grupo}</Text>
-                  <Text style={styles.exDesc}>{item.desc}</Text>
-                  <Text style={styles.exSeries}>{item.series} séries · {item.reps} reps</Text>
+            renderItem={({ item }) => {
+              const musculos = EXERCICIO_MUSCULOS[item.id] || { primarios: [], secundarios: [] };
+              return (
+                <View style={styles.exCard}>
+                  <View style={styles.exGrupoBar} />
+                  <View style={styles.exInfo}>
+                    <Text style={styles.exNome}>{item.nome}</Text>
+                    <Text style={styles.exGrupo}>{item.grupo}</Text>
+                    <Text style={styles.exDesc}>{item.desc}</Text>
+                    <Text style={styles.exSeries}>{item.series} séries · {item.reps} reps</Text>
+                    <View style={styles.exMuscleArea}>
+                      <MuscleMap
+                        primarios={musculos.primarios}
+                        secundarios={musculos.secundarios}
+                        escala={0.55}
+                        mostrarLegenda={true}
+                      />
+                    </View>
+                  </View>
                 </View>
-              </View>
-            )}
+              );
+            }}
           />
         </View>
       )}
@@ -156,8 +168,18 @@ export default function TreinosScreen() {
             <Text style={styles.fecharText}>✕ Encerrar</Text>
           </TouchableOpacity>
 
-          {exsAtivos.length > 0 && (
+          {exsAtivos.length > 0 && (() => {
+            // Calcular todos os músculos do treino inteiro
+            const todosP = [...new Set(exsAtivos.flatMap(e => EXERCICIO_MUSCULOS[e.id]?.primarios || []))];
+            const todosS = [...new Set(exsAtivos.flatMap(e => EXERCICIO_MUSCULOS[e.id]?.secundarios || []).filter(m => !todosP.includes(m)))];
+            return (
             <>
+              {exercicioAtual === 0 && !descansando && (
+                <View style={styles.treinoResumoMap}>
+                  <Text style={styles.treinoResumoTitulo}>💪 Músculos deste treino</Text>
+                  <MuscleMap primarios={todosP} secundarios={todosS} escala={0.5} mostrarLegenda={true} />
+                </View>
+              )}
               <Text style={styles.progressoText}>
                 Exercício {exercicioAtual + 1} de {exsAtivos.length}
               </Text>
@@ -169,6 +191,18 @@ export default function TreinosScreen() {
                 <Text style={styles.exAtivoGrupo}>{exsAtivos[exercicioAtual].grupo}</Text>
                 <Text style={styles.exAtivoNome}>{exsAtivos[exercicioAtual].nome}</Text>
                 <Text style={styles.exAtivoDesc}>{exsAtivos[exercicioAtual].desc}</Text>
+
+                {/* Mapa muscular do exercício atual */}
+                {EXERCICIO_MUSCULOS[exsAtivos[exercicioAtual].id] && (
+                  <View style={styles.muscleMapAtivo}>
+                    <MuscleMap
+                      primarios={EXERCICIO_MUSCULOS[exsAtivos[exercicioAtual].id].primarios}
+                      secundarios={EXERCICIO_MUSCULOS[exsAtivos[exercicioAtual].id].secundarios}
+                      escala={0.6}
+                      mostrarLegenda={true}
+                    />
+                  </View>
+                )}
 
                 <View style={styles.serieInfo}>
                   <View style={styles.serieBox}>
@@ -222,7 +256,8 @@ export default function TreinosScreen() {
                 ))}
               </ScrollView>
             </>
-          )}
+            );
+          })()}
         </LinearGradient>
       </Modal>
     </View>
@@ -299,4 +334,11 @@ const styles = StyleSheet.create({
   exMiniAtivo: { backgroundColor: '#533483' },
   exMiniFeito: { backgroundColor: '#1a3a1a' },
   exMiniNome: { color: '#fff', fontSize: 12 },
+  exMuscleArea: { marginTop: 12, alignItems: 'center' },
+  muscleMapAtivo: { marginVertical: 12, alignItems: 'center', width: '100%' },
+  treinoResumoMap: {
+    backgroundColor: '#1e1e30', borderRadius: 16, padding: 14,
+    marginBottom: 12, alignItems: 'center',
+  },
+  treinoResumoTitulo: { color: '#fff', fontWeight: 'bold', fontSize: 14, marginBottom: 10 },
 });
