@@ -8,57 +8,199 @@ import { salvar } from '../utils/storage';
 
 const { width } = Dimensions.get('window');
 
-const BIOTIPOS = {
+const BIOTIPOS_MASCULINO = {
   ectomorfo: {
     nome: 'Ectomorfo',
     emoji: '🦴',
     cor: '#3498db',
-    pulso: 'Seus dedos se sobrepõem',
+    pulso: 'Dedos se sobrepõem',
+    silhueta: '|  |',
+    descricao: 'Corpo magro, ombros e quadril estreitos, pouca gordura e pouco músculo naturalmente.',
     caracteristicas: [
       'Metabolismo muito rápido',
       'Dificuldade em ganhar peso e massa',
-      'Corpo naturalmente magro e ossos finos',
+      'Corpo naturalmente magro, ossos finos',
       'Pouca gordura corporal mesmo sem dieta',
-      'Precisa de alta ingestão calórica para crescer',
+      'Precisa de alta ingestão calórica',
     ],
-    treino: 'Foco em treinos pesados com menos volume. Priorize compostos (agachamento, supino, terra). Descanso entre séries mais longo.',
-    nutricao: 'Superávit calórico é essencial. Coma mais carboidratos complexos e proteínas. 5-6 refeições por dia.',
+    treino: 'Foco em treinos pesados com menor volume. Priorize compostos (agachamento, supino, terra). Descanso mais longo entre séries (2-3 min). Evite muito cardio.',
+    nutricao: 'Superávit calórico é essencial (+300 a 500 kcal/dia). Priorize carboidratos complexos e proteínas. 5-6 refeições por dia. Shake pós-treino obrigatório.',
     facilidade: 'Definição muscular',
-    dificuldade: 'Ganho de massa e peso',
+    dificuldade: 'Ganhar massa e peso',
   },
   mesomorfo: {
     nome: 'Mesomorfo',
     emoji: '💪',
     cor: '#2ecc71',
-    pulso: 'Seus dedos se encostam exatamente',
+    pulso: 'Dedos se encostam exatamente',
+    silhueta: '( | )',
+    descricao: 'Corpo atlético naturalmente, ombros largos, cintura definida, boa proporção.',
     caracteristicas: [
       'Metabolismo equilibrado',
       'Ganha músculo com facilidade',
       'Estrutura óssea média e atlética',
       'Responde bem a qualquer tipo de treino',
-      'Equilibrio natural entre músculo e gordura',
+      'Equilíbrio natural entre músculo e gordura',
     ],
-    treino: 'Responde bem a qualquer programa. Pode variar entre força, hipertrofia e resistência. Ótimo para treinos PPL e Full Body.',
-    nutricao: 'Dieta equilibrada funciona bem. Ajuste calorias conforme o objetivo (superávit para massa, déficit para emagrecer).',
+    treino: 'Responde bem a qualquer programa. Pode variar entre força, hipertrofia e resistência. PPL, Upper/Lower e Full Body funcionam muito bem.',
+    nutricao: 'Dieta equilibrada funciona bem. Ajuste calorias conforme o objetivo: superávit para massa, déficit moderado para definir.',
     facilidade: 'Ganho de massa muscular',
-    dificuldade: 'Manter consistência sem exagerar na gordura',
+    dificuldade: 'Não exagerar na gordura no bulk',
   },
   endomorfo: {
     nome: 'Endomorfo',
     emoji: '🔥',
     cor: '#e74c3c',
-    pulso: 'Seus dedos não se alcançam',
+    pulso: 'Dedos não se alcançam',
+    silhueta: '( O )',
+    descricao: 'Estrutura mais robusta, tendência a acumular gordura, especialmente no abdômen.',
     caracteristicas: [
       'Metabolismo mais lento',
       'Tendência natural a acumular gordura',
-      'Ossos mais grossos e estrutura robusta',
+      'Ossos mais grossos, estrutura robusta',
       'Ganha massa muscular com facilidade',
       'Maior força natural',
     ],
-    treino: 'Combine musculação com cardio. Treinos de alta intensidade (HIIT) são ótimos. Menos descanso entre séries para acelerar metabolismo.',
-    nutricao: 'Controle de carboidratos é importante. Priorize proteínas e gorduras boas. Déficit calórico moderado se quiser emagrecer.',
+    treino: 'Combine musculação com cardio. HIIT 2-3x/semana é excelente. Menos descanso entre séries (60-90s) para acelerar metabolismo. Treinos de maior volume.',
+    nutricao: 'Controle de carboidratos é chave. Priorize proteínas e gorduras boas. Déficit calórico moderado (-300 a 400 kcal). Evite carboidratos simples à noite.',
     facilidade: 'Ganho de força e massa',
     dificuldade: 'Perda de gordura e definição',
+  },
+};
+
+const BIOTIPOS_FEMININO = {
+  ectomorfa: {
+    nome: 'Ectomorfa',
+    emoji: '🦴',
+    cor: '#3498db',
+    pulso: 'Dedos se sobrepõem',
+    silhueta: '|  |',
+    descricao: 'Corpo naturalmente magro, pernas e braços finos, pouca curva natural e dificuldade em ganhar peso.',
+    caracteristicas: [
+      'Metabolismo muito acelerado',
+      'Dificuldade em ganhar peso e volume',
+      'Ossos finos, estrutura delicada',
+      'Pouca gordura corporal naturalmente',
+      'Raramente acumula gordura mesmo comendo mal',
+    ],
+    treino: 'Treinos de força e hipertrofia com cargas progressivas. Foque em glúteos, coxas e ombros para criar curvas. Menos cardio, mais musculação.',
+    nutricao: 'Superávit calórico necessário (+300 kcal). Carboidratos complexos e proteínas são aliados. 5-6 refeições. Não pule refeições.',
+    facilidade: 'Definição e barriga seca',
+    dificuldade: 'Criar volume e curvas',
+  },
+  mesomorfa: {
+    nome: 'Mesomorfa',
+    emoji: '💪',
+    cor: '#2ecc71',
+    pulso: 'Dedos se encostam exatamente',
+    silhueta: '( | )',
+    descricao: 'Corpo atlético com boa proporção, responde rápido ao treino, ganha músculo e perde gordura com facilidade.',
+    caracteristicas: [
+      'Metabolismo equilibrado',
+      'Ganha músculo com facilidade',
+      'Boa proporção entre ombros e quadril',
+      'Responde rápido a qualquer treino',
+      'Mantém resultados com consistência',
+    ],
+    treino: 'Qualquer método funciona bem. Combine musculação com exercícios funcionais. Pode trabalhar força e resistência na mesma semana.',
+    nutricao: 'Dieta equilibrada com proteína alta. Ajuste as calorias conforme o objetivo. Boa tolerância a carboidratos.',
+    facilidade: 'Ganho de músculo e perda de gordura',
+    dificuldade: 'Manutenção do peso sem exagerar',
+  },
+  endomorfa: {
+    nome: 'Endomorfa',
+    emoji: '🔥',
+    cor: '#e74c3c',
+    pulso: 'Dedos não se alcançam',
+    silhueta: '( O )',
+    descricao: 'Tendência a acumular gordura com facilidade, especialmente em quadril, coxas e abdômen. Estrutura mais robusta.',
+    caracteristicas: [
+      'Metabolismo mais lento',
+      'Acumula gordura com mais facilidade',
+      'Estrutura óssea mais larga e robusta',
+      'Boa força natural',
+      'Curvas mais pronunciadas naturalmente',
+    ],
+    treino: 'Musculação + cardio moderado. HIIT 2-3x/semana para acelerar metabolismo. Treinos de circuito são ótimos. Ative grandes grupos musculares.',
+    nutricao: 'Controle de carboidratos e açúcares. Priorize proteínas magras e vegetais. Déficit moderado para emagrecer sem perder músculo.',
+    facilidade: 'Força e curvas naturais',
+    dificuldade: 'Perder gordura e definir',
+  },
+  ampulheta: {
+    nome: 'Ampulheta',
+    emoji: '⌛',
+    cor: '#9b59b6',
+    pulso: null,
+    silhueta: '( | )',
+    descricao: 'Busto e quadril proporcionais com cintura bem definida. O biotipo mais desejado, mas que exige cuidado para manter o equilíbrio.',
+    caracteristicas: [
+      'Busto e quadril em proporção equilibrada',
+      'Cintura naturalmente definida',
+      'Distribui gordura de forma uniforme (busto e quadril)',
+      'Silhueta naturalmente feminina e curvilínea',
+      'Pode ter variação de ecto, meso ou endomorfa',
+    ],
+    treino: 'Mantenha o equilíbrio entre parte superior e inferior. Trabalhe glúteos e costas para valorizar as curvas. Pilates e funcional complementam bem.',
+    nutricao: 'Dieta equilibrada funciona bem. Atenção ao sódio para evitar inchaço. Proteína alta para manter o tônus muscular.',
+    facilidade: 'Silhueta naturalmente atraente',
+    dificuldade: 'Manter equilíbrio entre busto e quadril',
+  },
+  pera: {
+    nome: 'Pêra (Triângulo)',
+    emoji: '🍐',
+    cor: '#f39c12',
+    pulso: null,
+    silhueta: '( \\ / )',
+    descricao: 'Quadril mais largo que os ombros. Acumula gordura principalmente em coxas, glúteos e quadril.',
+    caracteristicas: [
+      'Quadril e coxas mais largos que os ombros',
+      'Parte superior mais fina (braços, ombros)',
+      'Acumula gordura em coxas e glúteos',
+      'Cintura relativamente definida',
+      'Parte inferior naturalmente mais forte',
+    ],
+    treino: 'Trabalhe ombros e costas para equilibrar a silhueta. Cardio moderado para reduzir coxas. Glúteo localizado para definir. Evite exagerar no volume de pernas.',
+    nutricao: 'Controle de gordura na dieta. Proteína alta para tonificar. Evite excessos de carboidratos à noite (acumulam mais no quadril).',
+    facilidade: 'Glúteos e coxas naturalmente definidos',
+    dificuldade: 'Emagrecer na parte inferior',
+  },
+  maca: {
+    nome: 'Maçã (Oval)',
+    emoji: '🍎',
+    cor: '#e67e22',
+    pulso: null,
+    silhueta: '( O )',
+    descricao: 'Acumula gordura principalmente no abdômen e na cintura. Ombros e quadril têm medidas parecidas, com pouca definição de cintura.',
+    caracteristicas: [
+      'Gordura concentrada no abdômen e cintura',
+      'Ombros e quadril com medidas semelhantes',
+      'Cintura pouco definida naturalmente',
+      'Pernas e braços geralmente mais finos',
+      'Maior risco cardiovascular se não cuidar',
+    ],
+    treino: 'Priorize cardio aeróbico + treino funcional. HIIT é muito eficaz. Exercícios para fortalecer o core e abdômen. Trabalhe também quadril para criar curvas.',
+    nutricao: 'Dieta anti-inflamatória. Reduza açúcar e sódio. Aumente fibras e proteínas. Déficit calórico moderado. Fracione bem as refeições.',
+    facilidade: 'Pernas e braços definidos mais facilmente',
+    dificuldade: 'Reduzir gordura abdominal',
+  },
+  retangular: {
+    nome: 'Retangular (Banana)',
+    emoji: '🟨',
+    cor: '#1abc9c',
+    pulso: null,
+    silhueta: '|  |',
+    descricao: 'Ombros, cintura e quadril com medidas semelhantes. Silhueta reta, pouca curva natural, distribuição uniforme de gordura.',
+    caracteristicas: [
+      'Medidas de ombro, cintura e quadril similares',
+      'Pouca curva natural',
+      'Distribuição uniforme de gordura',
+      'Geralmente metabolismo rápido a moderado',
+      'Facilidade em criar o corpo desejado com treino',
+    ],
+    treino: 'Foque em criar curvas: treino de glúteos, coxas e ombros. Use exercícios que aumentem o volume nas áreas certas. Peso progressivo é essencial.',
+    nutricao: 'Dieta com proteína alta para ganhar volume nos lugares certos. Carboidratos pré-treino para energia. Mantenha calorias adequadas para o objetivo.',
+    facilidade: 'Criar o corpo que desejar com consistência',
+    dificuldade: 'Criar curvas e definição naturais',
   },
 };
 
@@ -71,8 +213,7 @@ const OBJETIVOS = [
 
 function calcularIMC(peso, altura) {
   const alturaM = altura / 100;
-  const imc = peso / (alturaM * alturaM);
-  return imc.toFixed(1);
+  return (peso / (alturaM * alturaM)).toFixed(1);
 }
 
 function classificarIMC(imc) {
@@ -93,6 +234,8 @@ export default function OnboardingScreen({ onConcluir }) {
   const progressAnim = useRef(new Animated.Value(0)).current;
 
   const totalEtapas = 7;
+  const isFeminino = dados.sexo === 'feminino';
+  const BIOTIPOS = isFeminino ? BIOTIPOS_FEMININO : BIOTIPOS_MASCULINO;
 
   function avancar() {
     const novaEtapa = etapa + 1;
@@ -142,9 +285,12 @@ export default function OnboardingScreen({ onConcluir }) {
     return true;
   };
 
+  const temTestePulso = isFeminino
+    ? Object.values(BIOTIPOS).some(b => b.pulso)
+    : true;
+
   return (
     <LinearGradient colors={['#0d0d1a', '#1a1a2e']} style={styles.container}>
-      {/* Barra de progresso */}
       <View style={styles.progressContainer}>
         <View style={styles.progressTrack}>
           <Animated.View style={[styles.progressFill, {
@@ -180,7 +326,7 @@ export default function OnboardingScreen({ onConcluir }) {
           <View style={styles.etapa}>
             <Text style={styles.emoji}>📋</Text>
             <Text style={styles.titulo}>Olá, {dados.nome}!</Text>
-            <Text style={styles.subtitulo}>Agora preciso de algumas informações básicas.</Text>
+            <Text style={styles.subtitulo}>Algumas informações básicas para personalizar seu plano.</Text>
 
             <Text style={styles.label}>Idade</Text>
             <TextInput
@@ -201,7 +347,7 @@ export default function OnboardingScreen({ onConcluir }) {
                 <TouchableOpacity
                   key={op.id}
                   style={[styles.opcaoCard, dados.sexo === op.id && styles.opcaoSelecionada]}
-                  onPress={() => setDados({ ...dados, sexo: op.id })}>
+                  onPress={() => { setDados({ ...dados, sexo: op.id }); setBiotipoSelecionado(null); }}>
                   <Text style={styles.opcaoEmoji}>{op.emoji}</Text>
                   <Text style={[styles.opcaoLabel, dados.sexo === op.id && styles.opcaoLabelAtiva]}>
                     {op.label}
@@ -209,6 +355,14 @@ export default function OnboardingScreen({ onConcluir }) {
                 </TouchableOpacity>
               ))}
             </View>
+
+            {isFeminino && (
+              <View style={styles.infoFemBox}>
+                <Text style={styles.infoFemText}>
+                  ♀️ Para mulheres, além dos somatótipos clássicos, identificaremos também seu formato corporal — são <Text style={{ color: '#e94560', fontWeight: 'bold' }}>7 opções</Text> no total!
+                </Text>
+              </View>
+            )}
           </View>
         )}
 
@@ -217,12 +371,12 @@ export default function OnboardingScreen({ onConcluir }) {
           <View style={styles.etapa}>
             <Text style={styles.emoji}>⚖️</Text>
             <Text style={styles.titulo}>Medidas corporais</Text>
-            <Text style={styles.subtitulo}>Isso me ajuda a calcular seu IMC e criar seu plano.</Text>
+            <Text style={styles.subtitulo}>Usarei esses dados para calcular seu IMC e calibrar seu plano.</Text>
 
             <Text style={styles.label}>Peso atual (kg)</Text>
             <TextInput
               style={styles.input}
-              placeholder="Ex: 75"
+              placeholder="Ex: 65"
               placeholderTextColor="#555"
               keyboardType="decimal-pad"
               value={dados.peso}
@@ -232,7 +386,7 @@ export default function OnboardingScreen({ onConcluir }) {
             <Text style={styles.label}>Altura (cm)</Text>
             <TextInput
               style={styles.input}
-              placeholder="Ex: 175"
+              placeholder="Ex: 165"
               placeholderTextColor="#555"
               keyboardType="numeric"
               value={dados.altura}
@@ -243,13 +397,11 @@ export default function OnboardingScreen({ onConcluir }) {
               <View style={[styles.imcCard, { borderColor: imcInfo.cor }]}>
                 <Text style={styles.imcLabel}>Seu IMC</Text>
                 <Text style={[styles.imcValor, { color: imcInfo.cor }]}>{imc}</Text>
-                <Text style={[styles.imcClassificacao, { color: imcInfo.cor }]}>
-                  {imcInfo.texto}
-                </Text>
+                <Text style={[styles.imcClassificacao, { color: imcInfo.cor }]}>{imcInfo.texto}</Text>
                 <View style={styles.imcEscala}>
                   {[
-                    { faixa: '< 18.5', label: 'Abaixo', cor: '#3498db' },
-                    { faixa: '18.5–24.9', label: 'Normal', cor: '#2ecc71' },
+                    { faixa: '< 18.5', label: 'Abaixo do peso', cor: '#3498db' },
+                    { faixa: '18.5–24.9', label: 'Peso normal', cor: '#2ecc71' },
                     { faixa: '25–29.9', label: 'Sobrepeso', cor: '#f39c12' },
                     { faixa: '≥ 30', label: 'Obesidade', cor: '#e74c3c' },
                   ].map((f, i) => (
@@ -270,8 +422,7 @@ export default function OnboardingScreen({ onConcluir }) {
           <View style={styles.etapa}>
             <Text style={styles.emoji}>🎯</Text>
             <Text style={styles.titulo}>Qual é o seu objetivo?</Text>
-            <Text style={styles.subtitulo}>Vou montar seu treino e dieta com base nisso.</Text>
-
+            <Text style={styles.subtitulo}>Vou montar seu treino e alimentação com base nisso.</Text>
             {OBJETIVOS.map(obj => (
               <TouchableOpacity
                 key={obj.id}
@@ -295,10 +446,7 @@ export default function OnboardingScreen({ onConcluir }) {
           <View style={styles.etapa}>
             <Text style={styles.emoji}>📅</Text>
             <Text style={styles.titulo}>Quantos dias por semana?</Text>
-            <Text style={styles.subtitulo}>
-              Quantos dias você pode ou deseja treinar por semana?
-            </Text>
-
+            <Text style={styles.subtitulo}>Quantos dias você pode ou deseja treinar?</Text>
             <View style={styles.diasGrid}>
               {[2, 3, 4, 5, 6].map(d => (
                 <TouchableOpacity
@@ -310,23 +458,10 @@ export default function OnboardingScreen({ onConcluir }) {
                 </TouchableOpacity>
               ))}
             </View>
-
             <View style={styles.diasDica}>
-              {dados.diasTreino <= 3 && (
-                <Text style={styles.dicaText}>
-                  ✅ Ótimo para iniciantes — tempo de recuperação adequado entre os treinos.
-                </Text>
-              )}
-              {dados.diasTreino === 4 && (
-                <Text style={styles.dicaText}>
-                  ✅ Frequência intermediária — boa para treinos Upper/Lower ou PPL adaptado.
-                </Text>
-              )}
-              {dados.diasTreino >= 5 && (
-                <Text style={styles.dicaText}>
-                  ✅ Alta frequência — ideal para treinos divididos por grupos musculares.
-                </Text>
-              )}
+              {dados.diasTreino <= 3 && <Text style={styles.dicaText}>✅ Ótimo para iniciantes — tempo de recuperação adequado entre os treinos.</Text>}
+              {dados.diasTreino === 4 && <Text style={styles.dicaText}>✅ Frequência intermediária — ideal para Upper/Lower ou PPL adaptado.</Text>}
+              {dados.diasTreino >= 5 && <Text style={styles.dicaText}>✅ Alta frequência — ideal para treinos divididos por grupos musculares.</Text>}
             </View>
           </View>
         )}
@@ -337,38 +472,49 @@ export default function OnboardingScreen({ onConcluir }) {
             <Text style={styles.emoji}>🔍</Text>
             <Text style={styles.titulo}>Descubra seu biotipo</Text>
             <Text style={styles.subtitulo}>
-              Seu biotipo influencia diretamente como você treina e come. Vamos fazer um teste rápido!
+              Seu biotipo define como seu corpo responde ao treino e à alimentação.
+              {isFeminino ? ' Para mulheres temos 7 tipos!' : ' Existem 3 tipos principais.'}
             </Text>
 
-            <View style={styles.testeCard}>
-              <Text style={styles.testeTitulo}>🤏 Teste do Pulso</Text>
-              <Text style={styles.testeInstrucao}>
-                Circule o pulso da mão não dominante com o dedo indicador e o polegar da outra mão, logo abaixo do osso saliente.
-              </Text>
-
-              <View style={styles.testePassos}>
-                <View style={styles.testePasso}>
-                  <View style={styles.testeNumero}><Text style={styles.testeNumeroText}>1</Text></View>
-                  <Text style={styles.testePassoText}>Estique o braço não dominante à sua frente, palma para cima</Text>
-                </View>
-                <View style={styles.testePasso}>
-                  <View style={styles.testeNumero}><Text style={styles.testeNumeroText}>2</Text></View>
-                  <Text style={styles.testePassoText}>Com a outra mão, envolva o pulso com o polegar e o dedo do meio</Text>
-                </View>
-                <View style={styles.testePasso}>
-                  <View style={styles.testeNumero}><Text style={styles.testeNumeroText}>3</Text></View>
-                  <Text style={styles.testePassoText}>Observe se os dedos se sobrepõem, se encostam ou não se alcançam</Text>
+            {temTestePulso && (
+              <View style={styles.testeCard}>
+                <Text style={styles.testeTitulo}>🤏 Teste do Pulso (para ecto/meso/endomorfo)</Text>
+                <Text style={styles.testeInstrucao}>
+                  Circule o pulso da mão não dominante com o polegar e o dedo do meio da outra mão, logo abaixo do osso saliente.
+                </Text>
+                <View style={styles.testePassos}>
+                  {[
+                    'Estique o braço não dominante à sua frente, palma para cima',
+                    'Com a outra mão, envolva o pulso com o polegar e o dedo do meio',
+                    'Observe se os dedos se sobrepõem, se encostam ou não se alcançam',
+                  ].map((passo, i) => (
+                    <View key={i} style={styles.testePasso}>
+                      <View style={styles.testeNumero}><Text style={styles.testeNumeroText}>{i + 1}</Text></View>
+                      <Text style={styles.testePassoText}>{passo}</Text>
+                    </View>
+                  ))}
                 </View>
               </View>
-            </View>
+            )}
 
+            {isFeminino && (
+              <View style={styles.infoFemBox}>
+                <Text style={styles.infoFemText}>
+                  📐 Além do teste do pulso, mulheres também se identificam pelo <Text style={{ color: '#e94560', fontWeight: 'bold' }}>formato corporal</Text> (ampulheta, pêra, maçã, retangular). Na próxima tela você verá todos os tipos explicados!
+                </Text>
+              </View>
+            )}
+
+            <Text style={styles.previewTitulo}>Prévia dos biotipos {isFeminino ? 'femininos' : 'masculinos'}:</Text>
             <View style={styles.resultadosPrevia}>
               {Object.entries(BIOTIPOS).map(([key, bio]) => (
                 <View key={key} style={[styles.previaItem, { borderLeftColor: bio.cor }]}>
                   <Text style={styles.previaEmoji}>{bio.emoji}</Text>
                   <View style={styles.previaInfo}>
                     <Text style={[styles.previaNome, { color: bio.cor }]}>{bio.nome}</Text>
-                    <Text style={styles.previaDesc}>{bio.pulso}</Text>
+                    <Text style={styles.previaDesc}>
+                      {bio.pulso ? `🤏 ${bio.pulso}` : bio.descricao.slice(0, 55) + '...'}
+                    </Text>
                   </View>
                 </View>
               ))}
@@ -376,12 +522,16 @@ export default function OnboardingScreen({ onConcluir }) {
           </View>
         )}
 
-        {/* ETAPA 6 — Seleção e explicação do biotipo */}
+        {/* ETAPA 6 — Seleção do biotipo */}
         {etapa === 6 && (
           <View style={styles.etapa}>
             <Text style={styles.emoji}>💡</Text>
-            <Text style={styles.titulo}>Qual foi o seu resultado?</Text>
-            <Text style={styles.subtitulo}>Selecione o biotipo que corresponde ao seu teste:</Text>
+            <Text style={styles.titulo}>Qual é o seu biotipo?</Text>
+            <Text style={styles.subtitulo}>
+              {isFeminino
+                ? 'Selecione o que mais se identifica com seu corpo:'
+                : 'Com base no teste do pulso, selecione:'}
+            </Text>
 
             {Object.entries(BIOTIPOS).map(([key, bio]) => (
               <TouchableOpacity
@@ -397,7 +547,10 @@ export default function OnboardingScreen({ onConcluir }) {
                   <Text style={styles.biotipoEmoji}>{bio.emoji}</Text>
                   <View style={styles.biotipoTitleArea}>
                     <Text style={[styles.biotipoNome, { color: bio.cor }]}>{bio.nome}</Text>
-                    <Text style={styles.biotipoPulso}>📍 {bio.pulso}</Text>
+                    {bio.pulso
+                      ? <Text style={styles.biotipoPulso}>🤏 {bio.pulso}</Text>
+                      : <Text style={styles.biotipoPulso}>📐 Formato corporal</Text>
+                    }
                   </View>
                   {biotipoSelecionado === key && (
                     <View style={[styles.biotipoCheck, { backgroundColor: bio.cor }]}>
@@ -406,6 +559,7 @@ export default function OnboardingScreen({ onConcluir }) {
                   )}
                 </View>
 
+                <Text style={styles.biotipoDescricao}>{bio.descricao}</Text>
                 <View style={styles.biotipoDivider} />
 
                 <Text style={styles.biotipoSecao}>Características:</Text>
@@ -442,7 +596,6 @@ export default function OnboardingScreen({ onConcluir }) {
 
       </ScrollView>
 
-      {/* Botões de navegação */}
       <View style={styles.botoes}>
         {etapa > 0 && (
           <TouchableOpacity style={styles.btnVoltar} onPress={voltar}>
@@ -497,6 +650,11 @@ const styles = StyleSheet.create({
   opcaoEmoji: { fontSize: 30, marginBottom: 8 },
   opcaoLabel: { color: '#888', fontWeight: '600' },
   opcaoLabelAtiva: { color: '#fff' },
+  infoFemBox: {
+    backgroundColor: '#e9456015', borderRadius: 12, padding: 14,
+    borderLeftWidth: 3, borderLeftColor: '#e94560', marginTop: 12,
+  },
+  infoFemText: { color: '#ccc', lineHeight: 20, fontSize: 13 },
   imcCard: {
     backgroundColor: '#1e1e30', borderRadius: 16, padding: 20,
     alignItems: 'center', borderWidth: 2, marginTop: 8,
@@ -533,7 +691,7 @@ const styles = StyleSheet.create({
   diasDica: { backgroundColor: '#1e1e30', borderRadius: 12, padding: 14, borderLeftWidth: 3, borderLeftColor: '#533483' },
   dicaText: { color: '#ccc', lineHeight: 20 },
   testeCard: { backgroundColor: '#1e1e30', borderRadius: 16, padding: 18, marginBottom: 16 },
-  testeTitulo: { color: '#fff', fontSize: 18, fontWeight: 'bold', marginBottom: 10 },
+  testeTitulo: { color: '#fff', fontSize: 16, fontWeight: 'bold', marginBottom: 10 },
   testeInstrucao: { color: '#aaa', lineHeight: 22, marginBottom: 16 },
   testePassos: { gap: 12 },
   testePasso: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
@@ -543,26 +701,28 @@ const styles = StyleSheet.create({
   },
   testeNumeroText: { color: '#fff', fontWeight: 'bold', fontSize: 13 },
   testePassoText: { color: '#ccc', flex: 1, lineHeight: 20 },
-  resultadosPrevia: { gap: 10 },
+  previewTitulo: { color: '#fff', fontWeight: 'bold', marginBottom: 10, marginTop: 16 },
+  resultadosPrevia: { gap: 8 },
   previaItem: {
     flexDirection: 'row', alignItems: 'center', backgroundColor: '#1e1e30',
-    borderRadius: 12, padding: 14, borderLeftWidth: 4, gap: 12,
+    borderRadius: 12, padding: 12, borderLeftWidth: 4, gap: 12,
   },
-  previaEmoji: { fontSize: 24 },
+  previaEmoji: { fontSize: 22 },
   previaInfo: { flex: 1 },
-  previaNome: { fontWeight: 'bold', fontSize: 15 },
-  previaDesc: { color: '#888', fontSize: 13, marginTop: 2 },
+  previaNome: { fontWeight: 'bold', fontSize: 14 },
+  previaDesc: { color: '#888', fontSize: 12, marginTop: 2 },
   biotipoCard: {
     backgroundColor: '#1e1e30', borderRadius: 16, padding: 18,
     marginBottom: 14, borderWidth: 2,
   },
-  biotipoHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 12, gap: 12 },
-  biotipoEmoji: { fontSize: 32 },
+  biotipoHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 8, gap: 12 },
+  biotipoEmoji: { fontSize: 30 },
   biotipoTitleArea: { flex: 1 },
-  biotipoNome: { fontSize: 20, fontWeight: 'bold' },
+  biotipoNome: { fontSize: 18, fontWeight: 'bold' },
   biotipoPulso: { color: '#888', fontSize: 12, marginTop: 2 },
   biotipoCheck: { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   biotipoCheckText: { color: '#fff', fontWeight: 'bold' },
+  biotipoDescricao: { color: '#aaa', fontSize: 13, lineHeight: 20, marginBottom: 12 },
   biotipoDivider: { height: 1, backgroundColor: '#2a2a3e', marginBottom: 12 },
   biotipoSecao: { color: '#aaa', fontSize: 13, marginBottom: 8 },
   biotipoItem: { flexDirection: 'row', gap: 8, marginBottom: 4 },
