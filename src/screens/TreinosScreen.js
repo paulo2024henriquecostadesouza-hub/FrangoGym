@@ -7,7 +7,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { EXERCICIOS, GRUPOS, PLANOS } from '../data/exercises';
 import { salvar, carregar, KEYS, atualizarStreak } from '../utils/storage';
 import { EXERCICIO_MUSCULOS } from '../components/MuscleMap';
-import MuscleMapImage from '../components/MuscleMapImage';
+import MuscleMap3D from '../components/MuscleMap3D';
 import { carregar as carregarStorage } from '../utils/storage';
 
 export default function TreinosScreen() {
@@ -158,7 +158,7 @@ export default function TreinosScreen() {
                     <Text style={styles.exDesc}>{item.desc}</Text>
                     <Text style={styles.exSeries}>{item.series} séries · {item.reps} reps</Text>
                     <View style={styles.exMuscleArea}>
-                      <MuscleMapImage
+                      <MuscleMap3D
                         primarios={musculos.primarios}
                         secundarios={musculos.secundarios}
                         
@@ -185,7 +185,7 @@ export default function TreinosScreen() {
               {exercicioAtual === 0 && !descansando && (
                 <View style={styles.treinoResumoMap}>
                   <Text style={styles.treinoResumoTitulo}>💪 Músculos deste treino</Text>
-                  <MuscleMapImage primarios={todosMusculosP} secundarios={todosMusculosS} biotipo={biotipo} escala={0.5} mostrarLegenda={true} />
+                  <MuscleMap3D primarios={todosMusculosP} secundarios={todosMusculosS} biotipo={biotipo} escala={0.5} mostrarLegenda={true} />
                 </View>
               )}
               <Text style={styles.progressoText}>
@@ -202,7 +202,7 @@ export default function TreinosScreen() {
 
                 {musculosExAtual && (
                   <View style={styles.muscleMapAtivo}>
-                    <MuscleMapImage
+                    <MuscleMap3D
                       primarios={musculosExAtual.primarios}
                       secundarios={musculosExAtual.secundarios}
                       
