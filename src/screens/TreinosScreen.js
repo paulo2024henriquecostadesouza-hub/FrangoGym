@@ -2,12 +2,224 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity,
   StyleSheet, FlatList, Modal, Animated, Image,
+  TextInput, KeyboardAvoidingView, Platform, Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { EXERCICIOS, GRUPOS, PLANOS, MUSCLE_IMAGES } from '../data/exercises';
 import { salvar, carregar, KEYS, atualizarStreak } from '../utils/storage';
 import { EXERCICIO_MUSCULOS } from '../components/MuscleMap';
 import { carregar as carregarStorage } from '../utils/storage';
+
+// ─── Todos os músculos disponíveis para mapeamento ───────────────────────────
+const TODOS_MUSCULOS = [
+  'peitoral','peitoral_sup','deltoides','deltoides_post',
+  'biceps','triceps','antebraco',
+  'abdomen','obliquo',
+  'dorsais','trapezio','lombar',
+  'gluteos','quadriceps','isquiotibiais',
+  'tibial','panturrilha',
+];
+const MUSCULO_LABEL = {
+  peitoral:'Peitoral', peitoral_sup:'Peitoral Sup.', deltoides:'Deltoides',
+  deltoides_post:'Deltoides Post.', biceps:'Bíceps', triceps:'Tríceps',
+  antebraco:'Antebraço', abdomen:'Abdômen', obliquo:'Oblíquos',
+  dorsais:'Dorsais', trapezio:'Trapézio', lombar:'Lombar',
+  gluteos:'Glúteos', quadriceps:'Quadríceps', isquiotibiais:'Isquiotibiais',
+  tibial:'Tibial', panturrilha:'Panturrilha',
+};
+
+// ─── Modal: Cadastrar exercício customizado ───────────────────────────────────
+function ModalCadastrarExercicio({ visivel, onFechar, onSalvar }) {
+  const [nome, setNome]       = useState('');
+  const [grupo, setGrupo]     = useState('');
+  const [series, setSeries]   = useState('3');
+  const [reps, setReps]       = useState('12');
+  const [desc, setDesc]       = useState('');
+  const [primarios, setPrimarios]   = useState([]);
+  const [secundarios, setSecundarios] = useState([]);
+
+  function toggleMusculo(id, tipo) {
+    if (tipo === 'prim') {
+      setPrimarios(p => p.includes(id) ? p.filter(x => x !== id) : [...p.filter(x => x !== id), id]);
+      setSecundarios(s => s.filter(x => x !== id));
+    } else {
+      setSecundarios(s => s.includes(id) ? s.filter(x => x !== id) : [...s.filter(x => x !== id), id]);
+      setPrimarios(p => p.filter(x => x !== id));
+    }
+  }
+
+  async function salvar_exercicio() {
+    if (!nome.trim() || !grupo) {
+      Alert.alert('Campos obrigatórios', 'Preencha o nome e o grupo muscular.');
+      return;
+    }
+    const exercicio = {
+      id: `custom_${Date.now()}`,
+      nome: nome.trim(),
+      grupo,
+      series: parseInt(series) || 3,
+      reps,
+      desc: desc.trim() || `Execute ${nome.trim()} com boa forma.`,
+      isCustom: true,
+      musculos: { primarios, secundarios },
+    };
+    const existentes = await carregar(KEYS.EXERCICIOS_CUSTOM, []);
+    await salvar(KEYS.EXERCICIOS_CUSTOM, [...existentes, exercicio]);
+    onSalvar(exercicio);
+    resetar();
+  }
+
+  function resetar() {
+    setNome(''); setGrupo(''); setSeries('3'); setReps('12');
+    setDesc(''); setPrimarios([]); setSecundarios([]);
+  }
+
+  return (
+    <Modal visible={visivel} animationType="slide">
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
+        <View style={stylesModal.bg}>
+          {/* Header */}
+          <View style={stylesModal.header}>
+            <TouchableOpacity onPress={() => { resetar(); onFechar(); }}>
+              <Text style={stylesModal.fechar}>✕ Fechar</Text>
+            </TouchableOpacity>
+            <Text style={stylesModal.titulo}>Novo Exercício</Text>
+            <View style={{ width: 60 }} />
+          </View>
+
+          <ScrollView style={stylesModal.scroll} showsVerticalScrollIndicator={false}>
+            {/* Nome */}
+            <View style={stylesModal.bloco}>
+              <Text style={stylesModal.blocoTitulo}>📝 Identificação</Text>
+              <Text style={stylesModal.label}>Nome do exercício *</Text>
+              <TextInput style={stylesModal.input} value={nome} onChangeText={setNome}
+                placeholder="Ex: Rosca Concentrada" placeholderTextColor="#555" />
+
+              <Text style={stylesModal.label}>Grupo muscular *</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 8 }}>
+                {[...GRUPOS, 'Funcional', 'Mobilidade'].map(g => (
+                  <TouchableOpacity key={g}
+                    style={[stylesModal.chip, grupo === g && stylesModal.chipAtivo]}
+                    onPress={() => setGrupo(g)}>
+                    <Text style={[stylesModal.chipTxt, grupo === g && stylesModal.chipTxtAtivo]}>{g}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+
+            {/* Séries e reps */}
+            <View style={stylesModal.bloco}>
+              <Text style={stylesModal.blocoTitulo}>⚙️ Volume</Text>
+              <View style={stylesModal.rowDupla}>
+                <View style={{ flex: 1 }}>
+                  <Text style={stylesModal.label}>Séries</Text>
+                  <TextInput style={stylesModal.input} value={series} onChangeText={setSeries}
+                    keyboardType="numeric" placeholder="3" placeholderTextColor="#555" />
+                </View>
+                <View style={{ flex: 1, marginLeft: 12 }}>
+                  <Text style={stylesModal.label}>Repetições</Text>
+                  <TextInput style={stylesModal.input} value={reps} onChangeText={setReps}
+                    placeholder="8-12" placeholderTextColor="#555" />
+                </View>
+              </View>
+            </View>
+
+            {/* Descrição */}
+            <View style={stylesModal.bloco}>
+              <Text style={stylesModal.blocoTitulo}>📋 Descrição</Text>
+              <TextInput style={[stylesModal.input, { height: 90, textAlignVertical: 'top' }]}
+                value={desc} onChangeText={setDesc} multiline
+                placeholder="Como executar o exercício corretamente..."
+                placeholderTextColor="#555" />
+            </View>
+
+            {/* Músculos */}
+            <View style={stylesModal.bloco}>
+              <Text style={stylesModal.blocoTitulo}>💪 Músculos Trabalhados</Text>
+              <Text style={stylesModal.sub}>Toque 1x para principal (vermelho), 2x para auxiliar (laranja), 3x para remover.</Text>
+
+              <View style={stylesModal.musculosGrid}>
+                {TODOS_MUSCULOS.map(id => {
+                  const isPrim = primarios.includes(id);
+                  const isSec  = secundarios.includes(id);
+                  return (
+                    <TouchableOpacity key={id}
+                      style={[
+                        stylesModal.musculoTag,
+                        isPrim && stylesModal.musculoPrim,
+                        isSec  && stylesModal.musculoSec,
+                      ]}
+                      onPress={() => {
+                        if (!isPrim && !isSec) toggleMusculo(id, 'prim');
+                        else if (isPrim) toggleMusculo(id, 'sec');
+                        else { setPrimarios(p => p.filter(x => x !== id)); setSecundarios(s => s.filter(x => x !== id)); }
+                      }}>
+                      <Text style={[
+                        stylesModal.musculoTxt,
+                        isPrim && { color: '#fff' },
+                        isSec  && { color: '#fff' },
+                      ]}>{MUSCULO_LABEL[id]}</Text>
+                      {isPrim && <Text style={stylesModal.musculoIndicador}>●</Text>}
+                      {isSec  && <Text style={[stylesModal.musculoIndicador, { color: '#f5a623' }]}>●</Text>}
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+
+              {(primarios.length > 0 || secundarios.length > 0) && (
+                <View style={stylesModal.legendaWrap}>
+                  {primarios.length > 0 && (
+                    <Text style={stylesModal.legendaPrim}>🔴 Principal: {primarios.map(id => MUSCULO_LABEL[id]).join(', ')}</Text>
+                  )}
+                  {secundarios.length > 0 && (
+                    <Text style={stylesModal.legendaSec}>🟠 Auxiliar: {secundarios.map(id => MUSCULO_LABEL[id]).join(', ')}</Text>
+                  )}
+                </View>
+              )}
+            </View>
+
+            <TouchableOpacity style={stylesModal.salvarBtn} onPress={salvar_exercicio}>
+              <LinearGradient colors={['#533483', '#e94560']} style={stylesModal.salvarGrad}
+                start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
+                <Text style={stylesModal.salvarTxt}>💾 Salvar Exercício</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          </ScrollView>
+        </View>
+      </KeyboardAvoidingView>
+    </Modal>
+  );
+}
+
+const stylesModal = StyleSheet.create({
+  bg:       { flex: 1, backgroundColor: '#0d0d1a' },
+  header:   { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 20, paddingTop: 50, backgroundColor: '#1a1a2e' },
+  fechar:   { color: '#e94560', fontSize: 15 },
+  titulo:   { color: '#fff', fontWeight: 'bold', fontSize: 17 },
+  scroll:   { padding: 16 },
+  bloco:    { backgroundColor: '#1e1e30', borderRadius: 16, padding: 16, marginBottom: 12 },
+  blocoTitulo: { color: '#fff', fontWeight: 'bold', fontSize: 15, marginBottom: 12 },
+  label:    { color: '#aaa', fontSize: 13, marginBottom: 6, marginTop: 4 },
+  sub:      { color: '#666', fontSize: 12, marginBottom: 12, lineHeight: 18 },
+  input:    { backgroundColor: '#0d0d1a', borderRadius: 12, padding: 14, color: '#fff', fontSize: 15, marginBottom: 4, borderWidth: 1, borderColor: '#2a2a3e' },
+  rowDupla: { flexDirection: 'row' },
+  chip:     { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: '#0d0d1a', marginRight: 8, borderWidth: 1, borderColor: '#2a2a3e' },
+  chipAtivo:{ backgroundColor: '#533483', borderColor: '#533483' },
+  chipTxt:  { color: '#888', fontSize: 13 },
+  chipTxtAtivo: { color: '#fff', fontWeight: '700' },
+  musculosGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  musculoTag:   { paddingHorizontal: 12, paddingVertical: 7, borderRadius: 20, backgroundColor: '#0d0d1a', borderWidth: 1, borderColor: '#2a2a3e', flexDirection: 'row', alignItems: 'center', gap: 4 },
+  musculoPrim:  { backgroundColor: '#e94560', borderColor: '#e94560' },
+  musculoSec:   { backgroundColor: '#f5a623', borderColor: '#f5a623' },
+  musculoTxt:   { color: '#aaa', fontSize: 12, fontWeight: '600' },
+  musculoIndicador: { color: '#fff', fontSize: 10 },
+  legendaWrap:  { backgroundColor: '#0d0d1a', borderRadius: 10, padding: 10, marginTop: 10, gap: 4 },
+  legendaPrim:  { color: '#e94560', fontSize: 12 },
+  legendaSec:   { color: '#f5a623', fontSize: 12 },
+  salvarBtn:    { borderRadius: 14, overflow: 'hidden', marginBottom: 40, marginTop: 8 },
+  salvarGrad:   { padding: 18, alignItems: 'center' },
+  salvarTxt:    { color: '#fff', fontWeight: 'bold', fontSize: 17 },
+});
 
 // ─── Cor por grupo muscular ───────────────────────────────────────────────────
 const GRUPO_COR = {
@@ -39,10 +251,25 @@ export default function TreinosScreen() {
   const [serieAtual, setSerieAtual]     = useState(1);
   const [descansando, setDescansando]   = useState(false);
   const [tempo, setTempo]               = useState(60);
+  const [exerciciosCustom, setExerciciosCustom] = useState([]);
+  const [modalCadastrar, setModalCadastrar]     = useState(false);
   const timerRef   = useRef(null);
   const progressAnim = useRef(new Animated.Value(1)).current;
 
-  useEffect(() => () => clearInterval(timerRef.current), []);
+  useEffect(() => {
+    carregarCustom();
+    return () => clearInterval(timerRef.current);
+  }, []);
+
+  async function carregarCustom() {
+    const custom = await carregar(KEYS.EXERCICIOS_CUSTOM, []);
+    setExerciciosCustom(custom);
+  }
+
+  function onExercicioCadastrado(ex) {
+    setExerciciosCustom(prev => [...prev, ex]);
+    setModalCadastrar(false);
+  }
 
   function iniciarDescanso() {
     setDescansando(true); setTempo(60);
@@ -75,8 +302,23 @@ export default function TreinosScreen() {
     setTreinoAtivo(null); setExercicioAtual(0); setSerieAtual(1);
   }
 
+  // Mescla exercícios do sistema com os customizados
+  const todosExercicios = [
+    ...EXERCICIOS,
+    ...exerciciosCustom.map(e => ({ ...e, id: e.id })),
+  ];
+
   const exerciciosFiltrados = grupoFiltro === 'Todos'
-    ? EXERCICIOS : EXERCICIOS.filter(e => e.grupo === grupoFiltro);
+    ? todosExercicios
+    : grupoFiltro === 'Meus'
+      ? exerciciosCustom
+      : todosExercicios.filter(e => e.grupo === grupoFiltro);
+
+  // Para o EXERCICIO_MUSCULOS, inclui os customizados
+  const musculosPorId = {
+    ...EXERCICIO_MUSCULOS,
+    ...Object.fromEntries(exerciciosCustom.map(e => [e.id, e.musculos || { primarios: [], secundarios: [] }])),
+  };
 
   const exsAtivos = treinoAtivo
     ? treinoAtivo.exercicios.map(id => EXERCICIOS.find(e => e.id === id)).filter(Boolean)
@@ -156,15 +398,22 @@ export default function TreinosScreen() {
       ) : (
       /* ── ABA EXERCÍCIOS ───────────────────────────────────────────────────── */
         <View style={styles.scroll}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filtros}>
-            {['Todos', ...GRUPOS].map(g => (
-              <TouchableOpacity key={g}
-                style={[styles.filtroChip, grupoFiltro === g && styles.filtroAtivo]}
-                onPress={() => setGrupoFiltro(g)}>
-                <Text style={[styles.filtroText, grupoFiltro === g && styles.filtroTextAtivo]}>{g}</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
+          <View style={styles.filtrosRow}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filtros}>
+              {['Todos', 'Meus', ...GRUPOS].map(g => (
+                <TouchableOpacity key={g}
+                  style={[styles.filtroChip, grupoFiltro === g && styles.filtroAtivo]}
+                  onPress={() => setGrupoFiltro(g)}>
+                  <Text style={[styles.filtroText, grupoFiltro === g && styles.filtroTextAtivo]}>
+                    {g === 'Meus' ? `⭐ Meus (${exerciciosCustom.length})` : g}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+            <TouchableOpacity style={styles.addExBtn} onPress={() => setModalCadastrar(true)}>
+              <Text style={styles.addExBtnTxt}>+ Novo</Text>
+            </TouchableOpacity>
+          </View>
 
           <FlatList
             data={exerciciosFiltrados}
@@ -176,7 +425,12 @@ export default function TreinosScreen() {
 
                 {/* Info */}
                 <View style={styles.exInfo}>
-                  <Text style={styles.exNome}>{item.nome}</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                    <Text style={styles.exNome}>{item.nome}</Text>
+                    {item.isCustom && (
+                      <View style={styles.customBadge}><Text style={styles.customBadgeTxt}>⭐ Meu</Text></View>
+                    )}
+                  </View>
                   <Text style={[styles.exGrupo, { color: GRUPO_COR[item.grupo] || '#e94560' }]}>{item.grupo}</Text>
                   <Text style={styles.exDesc}>{item.desc}</Text>
                   <Text style={styles.exSeries}>{item.series} séries · {item.reps} reps</Text>
@@ -191,6 +445,13 @@ export default function TreinosScreen() {
           />
         </View>
       )}
+
+      {/* ── MODAL CADASTRAR EXERCÍCIO ─────────────────────────────────────── */}
+      <ModalCadastrarExercicio
+        visivel={modalCadastrar}
+        onFechar={() => setModalCadastrar(false)}
+        onSalvar={onExercicioCadastrado}
+      />
 
       {/* ── MODAL TREINO ATIVO ─────────────────────────────────────────────── */}
       <Modal visible={!!treinoAtivo} animationType="slide">
@@ -236,14 +497,14 @@ export default function TreinosScreen() {
               </View>
 
               {/* Músculos trabalhados (tags) */}
-              {EXERCICIO_MUSCULOS[exAtual.id] && (
+              {musculosPorId[exAtual.id] && (
                 <View style={styles.musculosTags}>
-                  {EXERCICIO_MUSCULOS[exAtual.id].primarios.map(m => (
+                  {musculosPorId[exAtual.id].primarios.map(m => (
                     <View key={m} style={styles.tagPrim}>
                       <Text style={styles.tagPrimTxt}>{m.replace(/_/g,' ')}</Text>
                     </View>
                   ))}
-                  {EXERCICIO_MUSCULOS[exAtual.id].secundarios.map(m => (
+                  {musculosPorId[exAtual.id].secundarios.map(m => (
                     <View key={m} style={styles.tagSec}>
                       <Text style={styles.tagSecTxt}>{m.replace(/_/g,' ')}</Text>
                     </View>
@@ -363,6 +624,11 @@ const styles = StyleSheet.create({
   playBtn:          { color: '#e94560', fontSize: 22, marginLeft: 8 },
 
   // Exercício card
+  filtrosRow:       { flexDirection: 'row', alignItems: 'center', marginBottom: 4 },
+  addExBtn:         { backgroundColor: '#e94560', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, marginLeft: 8, marginRight: 4 },
+  addExBtnTxt:      { color: '#fff', fontWeight: '700', fontSize: 13 },
+  customBadge:      { backgroundColor: '#53348330', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10, borderWidth: 1, borderColor: '#533483' },
+  customBadgeTxt:   { color: '#a78bfa', fontSize: 10, fontWeight: '700' },
   exCard:           { flexDirection: 'row', backgroundColor: '#1e1e30', borderRadius: 14, marginBottom: 12, overflow: 'hidden' },
   exColorBar:       { width: 4 },
   exInfo:           { flex: 1, padding: 14 },

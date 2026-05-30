@@ -8,7 +8,42 @@ import { carregar, salvar, KEYS } from '../utils/storage';
 import { BANCO_ALIMENTOS, CATEGORIAS_ALIMENTO, REFEICOES_TIPO } from '../data/alimentos';
 import { estimarNutrientes, calcularPorcao } from '../utils/nutriCalculator';
 
-const META = { cal: 2200, prot: 160, carb: 250, gord: 70, fibra: 25 };
+// Meta padrão — sobrescrita pelo perfil do usuário via calcularMetaDoPerfil()
+const META_PADRAO = { cal: 2200, prot: 160, carb: 250, gord: 70, fibra: 25 };
+
+function calcularMetaDoPerfil(perfil) {
+  if (!perfil?.peso || !perfil?.altura || !perfil?.idade) return META_PADRAO;
+  const peso = parseFloat(perfil.peso);
+  const altura = parseFloat(perfil.altura);
+  const idade = parseFloat(perfil.idade);
+  const sexo = perfil.sexo || 'masculino';
+  const objetivo = perfil.objetivo || 'saude';
+  const atividade = perfil.nivelAtividade || 'moderado';
+
+  const bmr = sexo === 'feminino'
+    ? 447.593 + 9.247 * peso + 3.098 * altura - 4.33 * idade
+    : 88.362 + 13.397 * peso + 4.799 * altura - 5.677 * idade;
+
+  const fatores = { sedentario: 1.2, leve: 1.375, moderado: 1.55, intenso: 1.725 };
+  const tdee = bmr * (fatores[atividade] || 1.55);
+  const ajuste = { emagrecer: -500, massa: 400, definir: -200, saude: 0 }[objetivo] || 0;
+  const cal = Math.round(tdee + ajuste);
+
+  const splits = {
+    emagrecer: { c: 0.35, p: 0.40, g: 0.25 },
+    massa:     { c: 0.50, p: 0.30, g: 0.20 },
+    definir:   { c: 0.38, p: 0.40, g: 0.22 },
+    saude:     { c: 0.45, p: 0.30, g: 0.25 },
+  };
+  const sp = splits[objetivo] || splits.saude;
+  return {
+    cal,
+    prot:  Math.round((cal * sp.p) / 4),
+    carb:  Math.round((cal * sp.c) / 4),
+    gord:  Math.round((cal * sp.g) / 9),
+    fibra: 25,
+  };
+}
 
 // ─── BARRA DE MACRO ───────────────────────────────────────────────────────────
 function BarraMacro({ label, valor, meta, cor }) {
@@ -503,11 +538,12 @@ function ModalRegistrarConsumo({ visivel, onFechar, onAdicionar, refeicaoTipo, a
 
 // ─── TELA PRINCIPAL ───────────────────────────────────────────────────────────
 export default function NutricaoScreen() {
-  const [diario, setDiario] = useState({});
+  const [diario, setDiario]               = useState({});
   const [alimentosCustom, setAlimentosCustom] = useState([]);
-  const [modalRegistrar, setModalRegistrar] = useState(false);
-  const [modalCadastrar, setModalCadastrar] = useState(false);
-  const [refeicaoAtiva, setRefeicaoAtiva] = useState(null);
+  const [modalRegistrar, setModalRegistrar]   = useState(false);
+  const [modalCadastrar, setModalCadastrar]   = useState(false);
+  const [refeicaoAtiva, setRefeicaoAtiva]     = useState(null);
+  const [meta, setMeta]                       = useState(META_PADRAO);
   const hoje = new Date().toDateString();
 
   useEffect(() => { carregar_dados(); }, []);
@@ -518,6 +554,9 @@ export default function NutricaoScreen() {
     setDiario(Array.isArray(dHoje) ? {} : dHoje);
     const custom = await carregar(KEYS.ALIMENTOS_CUSTOM, []);
     setAlimentosCustom(custom);
+    // Carrega perfil e recalcula meta automaticamente
+    const perfil = await carregar('perfil_usuario');
+    if (perfil) setMeta(calcularMetaDoPerfil(perfil));
   }
 
   async function adicionarAlimento(item) {
@@ -552,7 +591,7 @@ export default function NutricaoScreen() {
     fibra: a.fibra + (i.fibra || 0),
   }), { cal: 0, prot: 0, carb: 0, gord: 0, fibra: 0 });
 
-  const pctCal = Math.min((totais.cal / META.cal) * 100, 100);
+  const pctCal = Math.min((totais.cal / meta.cal) * 100, 100);
 
   return (
     <View style={styles.container}>
@@ -570,18 +609,23 @@ export default function NutricaoScreen() {
             </TouchableOpacity>
           </View>
 
+          {meta !== META_PADRAO && (
+            <View style={styles.metaPersonalizada}>
+              <Text style={styles.metaPersonalizadaTxt}>✅ Meta calculada do seu perfil</Text>
+            </View>
+          )}
           <View style={styles.calArea}>
             <View style={styles.calRing}>
               <Text style={styles.calNum}>{Math.round(totais.cal)}</Text>
               <Text style={styles.calUnid}>kcal</Text>
-              <Text style={styles.calMeta}>/ {META.cal}</Text>
+              <Text style={styles.calMeta}>/ {meta.cal}</Text>
             </View>
             <View style={styles.calInfo}>
               <View style={styles.calBarTrack}>
                 <View style={[styles.calBarFill, { width: `${pctCal}%` }]} />
               </View>
               <Text style={styles.calRestante}>
-                {Math.max(0, META.cal - Math.round(totais.cal))} kcal restantes
+                {Math.max(0, meta.cal - Math.round(totais.cal))} kcal restantes
               </Text>
               <View style={styles.calMacroRow}>
                 <Text style={styles.calMacroItem}>🥩 {Math.round(totais.prot)}g</Text>
@@ -596,10 +640,10 @@ export default function NutricaoScreen() {
         <View style={styles.body}>
           <View style={styles.card}>
             <Text style={styles.cardTitulo}>Macronutrientes do dia</Text>
-            <BarraMacro label="Proteína" valor={totais.prot} meta={META.prot} cor="#e94560" />
-            <BarraMacro label="Carboidrato" valor={totais.carb} meta={META.carb} cor="#f39c12" />
-            <BarraMacro label="Gordura" valor={totais.gord} meta={META.gord} cor="#9b59b6" />
-            <BarraMacro label="Fibra" valor={totais.fibra} meta={META.fibra} cor="#2ecc71" />
+            <BarraMacro label="Proteína" valor={totais.prot} meta={meta.prot} cor="#e94560" />
+            <BarraMacro label="Carboidrato" valor={totais.carb} meta={meta.carb} cor="#f39c12" />
+            <BarraMacro label="Gordura" valor={totais.gord} meta={meta.gord} cor="#9b59b6" />
+            <BarraMacro label="Fibra" valor={totais.fibra} meta={meta.fibra} cor="#2ecc71" />
           </View>
 
           <Text style={styles.secaoTitulo}>Refeições de hoje</Text>
@@ -813,4 +857,6 @@ const styles = StyleSheet.create({
   medidaOpcaoNome: { color: '#fff', fontWeight: '600' },
   medidaOpcaoPeso: { color: '#888', fontSize: 12, marginTop: 2 },
   gramасConsumidasText: { color: '#888', fontSize: 12, textAlign: 'center', marginTop: 8 },
+  metaPersonalizada: { backgroundColor: '#2ecc7120', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 5, marginBottom: 10, alignSelf: 'flex-start', borderWidth: 1, borderColor: '#2ecc71' },
+  metaPersonalizadaTxt: { color: '#2ecc71', fontSize: 11, fontWeight: '700' },
 });

@@ -1,13 +1,14 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const KEYS = {
-  TREINOS_FEITOS: 'treinos_feitos',
-  STREAK: 'streak',
-  ULTIMO_TREINO: 'ultimo_treino',
-  REFEICOES: 'refeicoes',
-  CONQUISTAS: 'conquistas',
-  HISTORICO_PESO: 'historico_peso',
-  ALIMENTOS_CUSTOM: 'alimentos_custom',
+  TREINOS_FEITOS:    'treinos_feitos',
+  STREAK:            'streak',
+  ULTIMO_TREINO:     'ultimo_treino',
+  REFEICOES:         'refeicoes',
+  CONQUISTAS:        'conquistas',
+  HISTORICO_PESO:    'historico_peso',
+  ALIMENTOS_CUSTOM:  'alimentos_custom',
+  EXERCICIOS_CUSTOM: 'exercicios_custom',
 };
 
 export async function salvar(chave, valor) {
