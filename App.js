@@ -3,31 +3,31 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Text, StatusBar, View, ActivityIndicator } from 'react-native';
 
-import HomeScreen from './src/screens/HomeScreen';
-import TreinosScreen from './src/screens/TreinosScreen';
+import HomeScreen      from './src/screens/HomeScreen';
+import TreinosScreen   from './src/screens/TreinosScreen';
 import ProgressoScreen from './src/screens/ProgressoScreen';
-import NutricaoScreen from './src/screens/NutricaoScreen';
-import DesafiosScreen from './src/screens/DesafiosScreen';
+import NutricaoScreen  from './src/screens/NutricaoScreen';
+import DesafiosScreen  from './src/screens/DesafiosScreen';
+import PerfilScreen    from './src/screens/PerfilScreen';
 import OnboardingScreen from './src/screens/OnboardingScreen';
 import { carregar } from './src/utils/storage';
 
 const Tab = createBottomTabNavigator();
 
 const ICONS = {
-  Início: '🏠',
-  Treinos: '💪',
+  Início:    '🏠',
+  Treinos:   '💪',
   Progresso: '📊',
-  Nutrição: '🥗',
-  Desafios: '🏆',
+  Nutrição:  '🥗',
+  Desafios:  '🏆',
+  Perfil:    '👤',
 };
 
 export default function App() {
   const [carregando, setCarregando] = useState(true);
-  const [perfil, setPerfil] = useState(null);
+  const [perfil, setPerfil]         = useState(null);
 
-  useEffect(() => {
-    verificarPerfil();
-  }, []);
+  useEffect(() => { verificarPerfil(); }, []);
 
   async function verificarPerfil() {
     const p = await carregar('perfil_usuario');
@@ -69,15 +69,16 @@ export default function App() {
           },
           tabBarActiveTintColor: '#e94560',
           tabBarInactiveTintColor: '#555',
-          tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
+          tabBarLabelStyle: { fontSize: 10, fontWeight: '600' },
           headerShown: false,
         })}
       >
-        <Tab.Screen name="Início" component={HomeScreen} />
-        <Tab.Screen name="Treinos" component={TreinosScreen} />
+        <Tab.Screen name="Início"    component={HomeScreen} />
+        <Tab.Screen name="Treinos"   component={TreinosScreen} />
         <Tab.Screen name="Progresso" component={ProgressoScreen} />
-        <Tab.Screen name="Nutrição" component={NutricaoScreen} />
-        <Tab.Screen name="Desafios" component={DesafiosScreen} />
+        <Tab.Screen name="Nutrição"  component={NutricaoScreen} />
+        <Tab.Screen name="Desafios"  component={DesafiosScreen} />
+        <Tab.Screen name="Perfil"    component={PerfilScreen} />
       </Tab.Navigator>
     </NavigationContainer>
   );
